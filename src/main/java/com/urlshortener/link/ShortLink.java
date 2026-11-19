@@ -28,14 +28,23 @@ public class ShortLink {
     @Column(name = "click_count", nullable = false)
     private long clickCount;
 
+    @Column(name = "expires_at", nullable = false)
+    private Instant expiresAt;
+
+    @Column(name = "owner_id", nullable = false, length = 64)
+    private String ownerId;
+
     protected ShortLink() {
         // for JPA
     }
 
-    public ShortLink(String code, String targetUrl, Instant createdAt) {
+    public ShortLink(String code, String targetUrl, Instant createdAt, Instant expiresAt,
+            String ownerId) {
         this.code = code;
         this.targetUrl = targetUrl;
         this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
+        this.ownerId = ownerId;
     }
 
     public Long getId() {
@@ -56,5 +65,21 @@ public class ShortLink {
 
     public long getClickCount() {
         return clickCount;
+    }
+
+    public Instant getExpiresAt() {
+        return expiresAt;
+    }
+
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public boolean isExpiredAt(Instant now) {
+        return !expiresAt.isAfter(now);
+    }
+
+    public boolean isOwnedBy(String clientId) {
+        return ownerId.equals(clientId);
     }
 }

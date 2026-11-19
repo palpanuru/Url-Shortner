@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    private static final String TYPE_BASE = "https://errors.urlshortener.local/";
+    private static final String TYPE_BASE = ProblemWriter.TYPE_BASE;
 
     @ExceptionHandler(ApiException.class)
     public ProblemDetail handleApi(ApiException ex) {

@@ -1,0 +1,19 @@
+# Test profile: two API clients for ownership tests; generous limits so functional tests are
+# never rate limited (RateLimitIntegrationTest sets its own tight limits).
+app:
+  security:
+    api-keys:
+      - client-id: alpha
+        sha256: d1a9c70d19c81f247d9a6c57b2a6bb48212cc202e49a432e16025a9d5d3fa8d3   # test-key-alpha
+      - client-id: beta
+        sha256: 038833737202aaf8dd73da38fc2bdef7b37ac9dffb7832e626094221bd84421d   # test-key-beta
+  rate-limit:
+    create:
+      capacity: 100000
+      per-minute: 100000
+    redirect:
+      capacity: 100000
+      per-minute: 100000
+  links:
+    purge:
+      enabled: false

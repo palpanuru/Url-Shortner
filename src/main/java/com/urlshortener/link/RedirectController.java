@@ -26,7 +26,7 @@ public class RedirectController {
     }
 
     @Operation(summary = "Redirect to the target URL")
-    @GetMapping("/{code:[A-Za-z0-9_-]{3,32}}")
+    @GetMapping("/{code:[A-Za-z0-9_-]+}")
     public ResponseEntity<Void> redirect(@PathVariable String code,
             @RequestHeader(value = HttpHeaders.REFERER, required = false) String referrer,
             @RequestHeader(value = HttpHeaders.USER_AGENT, required = false) String userAgent) {

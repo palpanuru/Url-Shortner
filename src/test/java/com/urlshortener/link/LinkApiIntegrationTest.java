@@ -9,18 +9,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.urlshortener.support.TestKeys;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 /** End-to-end through HTTP, Spring MVC, JPA, Flyway and H2. */
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class LinkApiIntegrationTest {
 
     @Autowired
@@ -43,11 +46,11 @@ class LinkApiIntegrationTest {
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", "https://example.com/landing"));
 
-        mvc.perform(get("/api/v1/links/" + code))
+        mvc.perform(get("/api/v1/links/" + code).header(TestKeys.HEADER, TestKeys.ALPHA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(code));
 
-        mvc.perform(delete("/api/v1/links/" + code)).andExpect(status().isNoContent());
+        mvc.perform(delete("/api/v1/links/" + code).header(TestKeys.HEADER, TestKeys.ALPHA)).andExpect(status().isNoContent());
         mvc.perform(get("/" + code)).andExpect(status().isNotFound());
     }
 
@@ -84,12 +87,12 @@ class LinkApiIntegrationTest {
 
     @Test
     void unknownCodeIs404() throws Exception {
-        mvc.perform(get("/api/v1/links/doesNotExist")).andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/links/doesNotExist").header(TestKeys.HEADER, TestKeys.ALPHA)).andExpect(status().isNotFound());
         mvc.perform(get("/nope123")).andExpect(status().isNotFound());
     }
 
     private ResultActions createLink(String body) throws Exception {
-        return mvc.perform(post("/api/v1/links").contentType(MediaType.APPLICATION_JSON).content(body));
+        return mvc.perform(post("/api/v1/links").header(TestKeys.HEADER, TestKeys.ALPHA).contentType(MediaType.APPLICATION_JSON).content(body));
     }
 
     private String codeOf(String responseBody) {

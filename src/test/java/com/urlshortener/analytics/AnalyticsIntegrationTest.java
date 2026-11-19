@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.urlshortener.support.TestKeys;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -22,10 +23,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class AnalyticsIntegrationTest {
 
     @Autowired
@@ -68,7 +71,7 @@ class AnalyticsIntegrationTest {
         click(code, null, null);
 
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() ->
-                mvc.perform(get("/api/v1/links/" + code + "/stats?days=3"))
+                mvc.perform(get("/api/v1/links/" + code + "/stats?days=3").header(TestKeys.HEADER, TestKeys.ALPHA))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.totalClicks").value(4))
                         .andExpect(jsonPath("$.clicksInWindow").value(4))
@@ -85,13 +88,13 @@ class AnalyticsIntegrationTest {
     @Test
     void statsWindowIsBounded() throws Exception {
         String code = create("https://example.com/window");
-        mvc.perform(get("/api/v1/links/" + code + "/stats?days=0")).andExpect(status().isBadRequest());
-        mvc.perform(get("/api/v1/links/" + code + "/stats?days=91")).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/v1/links/" + code + "/stats?days=0").header(TestKeys.HEADER, TestKeys.ALPHA)).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/v1/links/" + code + "/stats?days=91").header(TestKeys.HEADER, TestKeys.ALPHA)).andExpect(status().isBadRequest());
     }
 
     @Test
     void statsForUnknownLinkIs404() throws Exception {
-        mvc.perform(get("/api/v1/links/missing1/stats")).andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/links/missing1/stats").header(TestKeys.HEADER, TestKeys.ALPHA)).andExpect(status().isNotFound());
     }
 
     private void click(String code, String referrer, String userAgent) throws Exception {
@@ -106,13 +109,13 @@ class AnalyticsIntegrationTest {
     }
 
     private long clickCount(String code) throws Exception {
-        String body = mvc.perform(get("/api/v1/links/" + code))
+        String body = mvc.perform(get("/api/v1/links/" + code).header(TestKeys.HEADER, TestKeys.ALPHA))
                 .andReturn().getResponse().getContentAsString();
         return json.readTree(body).get("clickCount").asLong();
     }
 
     private String create(String url) throws Exception {
-        String body = mvc.perform(post("/api/v1/links")
+        String body = mvc.perform(post("/api/v1/links").header(TestKeys.HEADER, TestKeys.ALPHA)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"url\":\"" + url + "\"}"))
                 .andExpect(status().isCreated())

@@ -43,11 +43,13 @@ public class AnalyticsService {
      * clients can chart it directly.
      */
     @Transactional(readOnly = true)
-    public LinkStats stats(String code, int days) {
+    public LinkStats stats(String code, int days, String clientId) {
         if (days < 1 || days > properties.maxWindowDays()) {
             throw new InvalidWindowException(properties.maxWindowDays());
         }
-        ShortLink link = links.findByCode(code).orElseThrow(() -> new LinkNotFoundException(code));
+        ShortLink link = links.findByCode(code)
+                .filter(l -> l.isOwnedBy(clientId))
+                .orElseThrow(() -> new LinkNotFoundException(code));
         LocalDate today = LocalDate.now(clock.withZone(ZoneOffset.UTC));
         LocalDate from = today.minusDays(days - 1L);
 

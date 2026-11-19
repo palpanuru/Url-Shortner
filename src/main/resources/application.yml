@@ -39,3 +39,26 @@ app:
     threads: 2
     queue-capacity: 10000
     max-window-days: 90
+  links:
+    default-ttl: 365d
+    max-ttl: 730d
+    purge-after: 30d
+    block-private-addresses: true
+    blocked-domains: []        # stand-in for a threat-intel / Safe Browsing integration
+    purge:
+      enabled: true
+      cron: "0 15 3 * * *"
+  security:
+    # SHA-256 of each API key. The demo key below is "demo-key-change-me" - LOCAL USE ONLY.
+    # Override in any shared environment via APP_SECURITY_API_KEYS_0_CLIENT_ID / _SHA256.
+    api-keys:
+      - client-id: demo
+        sha256: 090d1548c9d65f413a1a2c828a0bee3a7ae02d2137caf51e6029e6c3cb1f1fa4
+  rate-limit:
+    enabled: true
+    create:
+      capacity: 20
+      per-minute: 60
+    redirect:
+      capacity: 200
+      per-minute: 1200

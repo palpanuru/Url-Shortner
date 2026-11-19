@@ -7,5 +7,6 @@ public record LinkResponse(
         String shortUrl,
         String targetUrl,
         Instant createdAt,
+        Instant expiresAt,
         long clickCount) {
 }
