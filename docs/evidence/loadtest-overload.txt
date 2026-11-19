@@ -1,0 +1,5 @@
+# analytics queue capacity = 50 (forced overload)
+redirects=10000 threads=16 statuses={302: 10000}
+throughput=2117 req/s  p50=5.02ms  p95=21.93ms  p99=31.08ms  max=101.40ms
+click_count recorded: 1170
+{"name":"analytics.events.dropped","description":"Click events discarded because the analytics queue was full","measurements":[{"statistic":"COUNT","value":10410.0}],"availableTags":[]}

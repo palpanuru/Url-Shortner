@@ -1,0 +1,27 @@
+
+== health
+{"status":"UP","groups":["liveness","readiness"]}
+
+== create (random code)
+{"code":"37eQHRC","shortUrl":"http://localhost:8080/37eQHRC","targetUrl":"https://example.com/docs?ref=smoke","createdAt":"2026-11-19T00:34:49.251079823Z","expiresAt":"2027-11-19T00:34:49.251079823Z","clickCount":0}
+
+== create (custom alias + expiry)
+{"code":"smoke-31656","shortUrl":"http://localhost:8080/smoke-31656","targetUrl":"https://example.org","createdAt":"2026-11-19T00:34:49.379752524Z","expiresAt":"2026-11-26T00:34:49Z","clickCount":0}
+
+== redirect /37eQHRC (expect 302)
+302 -> https://example.com/docs?ref=smoke
+302
+
+== rejected inputs (expect 422, 401)
+javascript: URL -> 422
+private IP     -> 422
+no API key     -> 401
+
+== stats
+{"code":"37eQHRC","totalClicks":2,"windowDays":3,"clicksInWindow":2,"daily":[{"date":"2026-11-17","clicks":0},{"date":"2026-11-18","clicks":0},{"date":"2026-11-19","clicks":2}],"topReferrers":[{"key":"news.example.com","clicks":1}],"agents":[{"key":"bot","clicks":1},{"key":"firefox","clicks":1}]}
+
+== delete, then redirect (expect 204, 404)
+204
+404
+
+smoke test OK

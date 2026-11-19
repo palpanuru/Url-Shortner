@@ -8,6 +8,7 @@ import com.urlshortener.link.dto.CreateLinkRequest;
 import com.urlshortener.link.dto.LinkResponse;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -49,7 +50,9 @@ public class ShortLinkService {
      */
     public LinkResponse create(CreateLinkRequest request, String ownerId) {
         String targetUrl = urlPolicy.validate(request.url());
-        Instant now = clock.instant();
+        // Microsecond precision matches what PostgreSQL stores, so the create response and later
+        // reads return identical timestamps.
+        Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);
         Instant expiresAt = resolveExpiry(request.expiresAt(), now);
 
         if (request.alias() != null && !request.alias().isBlank()) {

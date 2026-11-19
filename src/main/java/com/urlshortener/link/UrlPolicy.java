@@ -21,9 +21,11 @@ import org.springframework.stereotype.Component;
  * remaining rules block common phishing and redirect-loop tricks. Hostnames are deliberately NOT
  * resolved via DNS: that would add latency, an external dependency, and still be bypassable by
  * DNS rebinding.
+ *
+ * <p>Final because the constructor can throw on a bad base URL (SpotBugs CT_CONSTRUCTOR_THROW).
  */
 @Component
-public class UrlPolicy {
+public final class UrlPolicy {
 
     static final int MAX_LENGTH = 2048;
     private static final Set<String> ALLOWED_SCHEMES = Set.of("http", "https");

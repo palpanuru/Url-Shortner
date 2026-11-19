@@ -6,8 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -45,10 +47,9 @@ public class AsyncConfig implements AsyncConfigurer {
         executor.setCorePoolSize(props.threads());
         executor.setMaxPoolSize(props.threads());
         executor.setQueueCapacity(props.queueCapacity());
-        executor.setRejectedExecutionHandler((task, pool) -> {
-            increment(DROPPED);
-            log.warn("Analytics queue full; dropping click event");
-        });
+        // Count only; no per-event log line. Logging every drop turned overload into a log flood
+        // in the load test (8.8k WARN lines in ~7s) - alert on the metric instead.
+        executor.setRejectedExecutionHandler((task, pool) -> increment(DROPPED));
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(10);
         return executor;
@@ -60,6 +61,19 @@ public class AsyncConfig implements AsyncConfigurer {
             increment(FAILED);
             log.warn("Async task {} failed", method.getName(), ex);
         };
+    }
+
+    /** Register counters at startup so dashboards and alerts see an explicit zero. */
+    @EventListener(ApplicationReadyEvent.class)
+    public void registerMeters() {
+        meterRegistry.ifAvailable(registry -> {
+            Counter.builder(DROPPED)
+                    .description("Click events discarded because the analytics queue was full")
+                    .register(registry);
+            Counter.builder(FAILED)
+                    .description("Click events that failed to persist")
+                    .register(registry);
+        });
     }
 
     private void increment(String name) {

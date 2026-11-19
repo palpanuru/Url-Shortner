@@ -41,22 +41,23 @@ class SecurityIntegrationTest {
 
     @Test
     void linksAreVisibleOnlyToTheirOwner() throws Exception {
+        String alias = "owned-" + System.nanoTime(); // unique: tests may run against a persistent DB
         mvc.perform(post("/api/v1/links").header(TestKeys.HEADER, TestKeys.ALPHA)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"url\":\"https://example.com/owned\",\"alias\":\"alpha-owned\"}"))
+                        .content("{\"url\":\"https://example.com/owned\",\"alias\":\"" + alias + "\"}"))
                 .andExpect(status().isCreated());
 
         // Another client sees 404 (not 403) so it cannot probe which codes exist.
-        mvc.perform(get("/api/v1/links/alpha-owned").header(TestKeys.HEADER, TestKeys.BETA))
+        mvc.perform(get("/api/v1/links/" + alias).header(TestKeys.HEADER, TestKeys.BETA))
                 .andExpect(status().isNotFound());
-        mvc.perform(get("/api/v1/links/alpha-owned/stats").header(TestKeys.HEADER, TestKeys.BETA))
+        mvc.perform(get("/api/v1/links/" + alias + "/stats").header(TestKeys.HEADER, TestKeys.BETA))
                 .andExpect(status().isNotFound());
-        mvc.perform(delete("/api/v1/links/alpha-owned").header(TestKeys.HEADER, TestKeys.BETA))
+        mvc.perform(delete("/api/v1/links/" + alias).header(TestKeys.HEADER, TestKeys.BETA))
                 .andExpect(status().isNotFound());
 
         // The redirect itself is public, and the owner still has full access.
-        mvc.perform(get("/alpha-owned")).andExpect(status().isFound());
-        mvc.perform(get("/api/v1/links/alpha-owned").header(TestKeys.HEADER, TestKeys.ALPHA))
+        mvc.perform(get("/" + alias)).andExpect(status().isFound());
+        mvc.perform(get("/api/v1/links/" + alias).header(TestKeys.HEADER, TestKeys.ALPHA))
                 .andExpect(status().isOk());
     }
 

@@ -50,25 +50,26 @@ class ExpiryIntegrationTest {
     @Test
     void expiredLinksAnswer410ThenArePurgedAfterRetention() throws Exception {
         MutableClock testClock = (MutableClock) clock;
+        String alias = "flash-" + System.nanoTime(); // unique: tests may run against a persistent DB
         mvc.perform(post("/api/v1/links").header(TestKeys.HEADER, TestKeys.ALPHA)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"url\":\"https://example.com/promo\",\"alias\":\"flash-sale\","
+                        .content("{\"url\":\"https://example.com/promo\",\"alias\":\"" + alias + "\","
                                 + "\"expiresAt\":\"2026-06-01T13:00:00Z\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.expiresAt").value("2026-06-01T13:00:00Z"));
 
-        mvc.perform(get("/flash-sale")).andExpect(status().isFound()); // also warms the cache
+        mvc.perform(get("/" + alias)).andExpect(status().isFound()); // also warms the cache
 
         testClock.advance(Duration.ofHours(2));
-        mvc.perform(get("/flash-sale"))
+        mvc.perform(get("/" + alias))
                 .andExpect(status().isGone())
                 .andExpect(jsonPath("$.type").value("https://errors.urlshortener.local/link-expired"));
 
         assertThat(service.purgeExpired()).isZero(); // still inside the 30-day retention window
 
         testClock.advance(Duration.ofDays(31));
-        assertThat(service.purgeExpired()).isEqualTo(1);
-        mvc.perform(get("/api/v1/links/flash-sale").header(TestKeys.HEADER, TestKeys.ALPHA))
+        assertThat(service.purgeExpired()).isPositive();
+        mvc.perform(get("/api/v1/links/" + alias).header(TestKeys.HEADER, TestKeys.ALPHA))
                 .andExpect(status().isNotFound());
     }
 

@@ -1,0 +1,5 @@
+# default config (queue 10000, 2 writer threads), PostgreSQL 16, rate limiting off
+redirects=10000 threads=16 statuses={302: 10000}
+throughput=2355 req/s  p50=4.46ms  p95=20.43ms  p99=30.98ms  max=90.45ms
+click_count recorded: 2733
+after 10s more: click_count=10000

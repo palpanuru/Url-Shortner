@@ -56,11 +56,12 @@ class LinkApiIntegrationTest {
 
     @Test
     void customAliasIsHonouredAndDuplicatesConflict() throws Exception {
-        createLink("{\"url\":\"https://example.com\",\"alias\":\"my-alias\"}")
+        String alias = "my-alias-" + System.nanoTime(); // unique: tests may run against a persistent DB
+        createLink("{\"url\":\"https://example.com\",\"alias\":\"" + alias + "\"}")
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.code").value("my-alias"));
+                .andExpect(jsonPath("$.code").value(alias));
 
-        createLink("{\"url\":\"https://example.org\",\"alias\":\"my-alias\"}")
+        createLink("{\"url\":\"https://example.org\",\"alias\":\"" + alias + "\"}")
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.type").value("https://errors.urlshortener.local/alias-taken"));
     }

@@ -12,6 +12,13 @@ public record LinkStats(
         List<Bucket> topReferrers,
         List<Bucket> agents) {
 
+    /** Defensive, immutable copies: a response object should never alias service state. */
+    public LinkStats {
+        daily = List.copyOf(daily);
+        topReferrers = List.copyOf(topReferrers);
+        agents = List.copyOf(agents);
+    }
+
     public record DailyClicks(LocalDate date, long clicks) {
     }
 

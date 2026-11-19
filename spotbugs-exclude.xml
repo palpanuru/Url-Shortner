@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Reviewed suppressions. Each entry states why the finding is a false positive in this codebase.
+  New findings fail the build until fixed or explicitly justified here.
+-->
+<FindBugsFilter>
+    <!--
+      EI_EXPOSE_REP2 on constructor injection: Spring hands each bean its collaborators
+      (repositories, services, ObjectMapper, etc.). Storing those references is the point of
+      dependency injection, not a leak of internal state. Restricted to Spring-managed classes;
+      value objects (DTOs, records) are still checked and use defensive copies (see LinkStats).
+    -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Or>
+            <Class name="~com\.urlshortener\..*(Service|Controller|Recorder|Purger|Filter|Writer)"/>
+        </Or>
+    </Match>
+</FindBugsFilter>

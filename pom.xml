@@ -22,6 +22,8 @@
         <springdoc.version>2.8.17</springdoc.version>
         <jacoco.version>0.8.16</jacoco.version>
         <jacoco.minimum.line.coverage>0.80</jacoco.minimum.line.coverage>
+        <spotbugs.plugin.version>4.10.5.0</spotbugs.plugin.version>
+        <findsecbugs.version>1.14.0</findsecbugs.version>
     </properties>
 
     <dependencies>
@@ -123,6 +125,32 @@
                                 </rule>
                             </rules>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Static analysis + security rules (FindSecBugs). Fails the build on any finding at
+                 the configured threshold; justified suppressions live in spotbugs-exclude.xml. -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs.plugin.version}</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Medium</threshold>
+                    <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.h3xstream.findsecbugs</groupId>
+                            <artifactId>findsecbugs-plugin</artifactId>
+                            <version>${findsecbugs.version}</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spotbugs-check</id>
+                        <phase>verify</phase>
+                        <goals><goal>check</goal></goals>
                     </execution>
                 </executions>
             </plugin>

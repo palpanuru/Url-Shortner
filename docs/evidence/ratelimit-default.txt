@@ -1,0 +1,2 @@
+# default rate limits: redirect burst 200 per IP
+redirects=1000 threads=4 statuses={302: 221, 429: 779}
