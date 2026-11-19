@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: url-shortener
+  datasource:
+    # Zero-setup default: in-memory H2 in PostgreSQL mode. Use the "postgres" profile for a real DB.
+    url: jdbc:h2:mem:shortener;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate   # schema is owned by Flyway, never by Hibernate
+  flyway:
+    enabled: true
+  # Note: spring.mvc.problemdetails.enabled is deliberately left off. GlobalExceptionHandler owns
+  # error mapping; enabling Boot's handler too makes two advices compete for the same exceptions.
+
+server:
+  port: 8080
+  error:
+    include-stacktrace: never
+    include-message: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+app:
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  code-length: 7
+  max-code-generation-attempts: 5
