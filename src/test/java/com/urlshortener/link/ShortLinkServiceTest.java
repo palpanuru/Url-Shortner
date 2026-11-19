@@ -33,7 +33,7 @@ class ShortLinkServiceTest {
         codeGenerator = mock(CodeGenerator.class);
         AppProperties props = new AppProperties("http://sho.rt/", 7, 3);
         service = new ShortLinkService(repository, codeGenerator, new UrlPolicy(),
-                new AliasPolicy(), props, Clock.fixed(NOW, ZoneOffset.UTC));
+                new AliasPolicy(), props, Clock.fixed(NOW, ZoneOffset.UTC), event -> { });
     }
 
     @Test

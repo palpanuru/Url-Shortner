@@ -57,8 +57,4 @@ public class ShortLink {
     public long getClickCount() {
         return clickCount;
     }
-
-    public void setClickCount(long clickCount) {
-        this.clickCount = clickCount;
-    }
 }

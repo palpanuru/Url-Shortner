@@ -1,10 +1,12 @@
 package com.urlshortener.link;
 
+import com.urlshortener.analytics.LinkClickedEvent;
 import com.urlshortener.config.AppProperties;
 import com.urlshortener.link.dto.CreateLinkRequest;
 import com.urlshortener.link.dto.LinkResponse;
 import java.time.Clock;
 import java.time.Instant;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,15 +20,18 @@ public class ShortLinkService {
     private final AliasPolicy aliasPolicy;
     private final AppProperties properties;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
     public ShortLinkService(ShortLinkRepository repository, CodeGenerator codeGenerator,
-            UrlPolicy urlPolicy, AliasPolicy aliasPolicy, AppProperties properties, Clock clock) {
+            UrlPolicy urlPolicy, AliasPolicy aliasPolicy, AppProperties properties, Clock clock,
+            ApplicationEventPublisher events) {
         this.repository = repository;
         this.codeGenerator = codeGenerator;
         this.urlPolicy = urlPolicy;
         this.aliasPolicy = aliasPolicy;
         this.properties = properties;
         this.clock = clock;
+        this.events = events;
     }
 
     /**
@@ -65,11 +70,16 @@ public class ShortLinkService {
         return toResponse(find(code));
     }
 
-    /** Resolves a code to its target URL and records the click. */
-    @Transactional
-    public String resolveAndCount(String code) {
+    /**
+     * Resolves a code to its target URL and publishes a click event. The redirect path is now
+     * read-only: analytics are written asynchronously by {@code ClickRecorder}, so a slow or
+     * failing analytics write cannot delay or break a redirect.
+     */
+    @Transactional(readOnly = true)
+    public String resolve(String code, String referrer, String userAgent) {
         ShortLink link = find(code);
-        link.setClickCount(link.getClickCount() + 1);
+        events.publishEvent(
+                new LinkClickedEvent(link.getId(), clock.instant(), referrer, userAgent));
         return link.getTargetUrl();
     }
 

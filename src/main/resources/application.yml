@@ -35,3 +35,7 @@ app:
   base-url: ${APP_BASE_URL:http://localhost:8080}
   code-length: 7
   max-code-generation-attempts: 5
+  analytics:
+    threads: 2
+    queue-capacity: 10000
+    max-window-days: 90
