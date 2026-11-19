@@ -50,7 +50,7 @@ app:
       cron: "0 15 3 * * *"
   security:
     # SHA-256 of each API key. The demo key below is "demo-key-change-me" - LOCAL USE ONLY.
-    # Override in any shared environment via APP_SECURITY_API_KEYS_0_CLIENT_ID / _SHA256.
+    # Override in any shared environment via APP_SECURITY_APIKEYS_0_CLIENTID / APP_SECURITY_APIKEYS_0_SHA256.
     api-keys:
       - client-id: demo
         sha256: 090d1548c9d65f413a1a2c828a0bee3a7ae02d2137caf51e6029e6c3cb1f1fa4
