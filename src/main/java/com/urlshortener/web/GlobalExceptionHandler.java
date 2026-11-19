@@ -8,8 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * Maps exceptions to RFC 9457 problem details. Unexpected errors return a generic message so
@@ -38,6 +40,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail handleUnreadable(HttpMessageNotReadableException ex) {
         return problem(HttpStatus.BAD_REQUEST, "malformed-request", "Request body is not valid JSON");
+    }
+
+    @ExceptionHandler(ServletRequestBindingException.class)
+    public ProblemDetail handleBinding(ServletRequestBindingException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "malformed-request", "Request is missing required data");
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "malformed-request",
+                "Parameter '" + ex.getName() + "' has an invalid value");
     }
 
     @ExceptionHandler(Exception.class)

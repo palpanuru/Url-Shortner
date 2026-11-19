@@ -44,7 +44,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain chain) throws ServletException, IOException {
         long retryAfter = 0;
-        String path = request.getRequestURI();
+        String path = RequestPaths.lookupPath(request);
         if ("POST".equals(request.getMethod()) && "/api/v1/links".equals(path)) {
             Object clientId = request.getAttribute(ApiKeyAuthFilter.CLIENT_ID_ATTRIBUTE);
             retryAfter = limiter.tryAcquire("create:" + clientId, properties.create());

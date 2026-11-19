@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.urlshortener.support.TestKeys;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +33,21 @@ class SecurityIntegrationTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().exists("WWW-Authenticate"))
                 .andExpect(jsonPath("$.type").value("https://errors.urlshortener.local/unauthorized"));
+    }
+
+    /** Regression: path tricks must not route around authentication. */
+    @ParameterizedTest
+    @ValueSource(strings = {"/api;x/v1/links", "/%61pi/v1/links", "/api/v1/links;jsessionid=1"})
+    void obfuscatedPathsStillRequireApiKey(String path) throws Exception {
+        mvc.perform(post(java.net.URI.create(path)).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"url\":\"https://example.com\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void nonNumericWindowIsABadRequest() throws Exception {
+        mvc.perform(get("/api/v1/links/abc/stats?days=lots").header(TestKeys.HEADER, TestKeys.ALPHA))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

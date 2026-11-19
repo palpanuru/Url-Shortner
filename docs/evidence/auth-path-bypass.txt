@@ -1,0 +1,14 @@
+# Found during review pass (before fix) - live server, POST without API key:
+/api;x/v1/links -> 500   (auth filter skipped; controller failed closed on missing client id)
+/api/v1/links   -> 401
+/%61pi/v1/links -> 500   (auth filter skipped)
+/api//v1/links  -> 401
+
+# Regression test with the fix reverted:
+SecurityIntegrationTest.obfuscatedPathsStillRequireApiKey  Status expected:<401> but was:<400>  (x2)
+
+# After fix (filters match on Spring's normalised lookup path) - live server:
+/api;x/v1/links -> 401
+/api/v1/links   -> 401
+/%61pi/v1/links -> 401
+/api//v1/links  -> 401

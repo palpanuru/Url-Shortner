@@ -34,9 +34,14 @@ public class ApiKeyAuthFilter extends OncePerRequestFilter {
         this.problems = problems;
     }
 
+    /**
+     * Matches on the same normalised path Spring MVC routes on (URL-decoded, ";params" removed).
+     * Checking the raw request URI let "/api;x/v1/links" and "/%61pi/v1/links" skip this filter
+     * while still reaching the controller - found in review and covered by a regression test.
+     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith("/api/");
+        return !RequestPaths.lookupPath(request).startsWith("/api/");
     }
 
     @Override
